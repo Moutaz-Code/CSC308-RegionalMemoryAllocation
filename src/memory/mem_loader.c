@@ -1,54 +1,55 @@
+//This file is to be called by the main program to load the needed memory module (arena_alloc.c, pool_malloc.c, or malloc.c).
 
-/*
- * ==========================
- * memory/mem_loader.c
- * Reads user choice and initializes the memory subsystem
- * ==========================
- */
-#include "mem.h"
 #include <stdio.h>
+#include <stdlib.h>
 
-void mem_init(int choice);
-void mem_cleanup(void);
+// Function pointer types for memory operations
+typedef void* (*mem_alloc_func)(size_t);
+typedef void  (*mem_free_func)(void*);
 
-AllocFn mem_malloc = NULL;
-FreeFn  mem_free   = NULL;
+// Declarations for memory modules
+void* arena_alloc_malloc(size_t size);
+void  arena_alloc_free(void* ptr);
 
-void mem_loader(int argc, char** argv) {
-    int choice = 1; // default to malloc/free
-    if (argc >= 2) {
-        choice = atoi(argv[1]);
-    } else {
-        printf("Select memory strategy:\n");
-        printf("1) malloc/free\n2) arena\n3) pool\n4) LD_PRELOAD (pass-through)\n");
-        scanf("%d", &choice);
-    }
+void* pool_malloc_malloc(size_t size);
+void  pool_malloc_free(void* ptr);
 
+void* std_malloc(size_t size);
+void  std_free(void* ptr);
+
+// Struct to hold chosen memory functions
+typedef struct {
+    mem_alloc_func alloc;
+    mem_free_func  free;
+} mem_loader_t;
+
+// Loader function to select memory module
+void mem_loader_init(mem_loader_t* loader, int choice) {
     switch (choice) {
-        case 2:
-            printf("[Mem] Using Arena Allocator\n");
-            mem_init(2);
+        case 1: // Standard malloc
+            loader->alloc = std_malloc;
+            loader->free  = std_free;
             break;
-        case 3:
-            printf("[Mem] Using Pool Allocator\n");
-            mem_init(3);
+        case 2: // Arena allocator
+            loader->alloc = arena_alloc_malloc;
+            loader->free  = arena_alloc_free;
             break;
-        case 4:
-            printf("[Mem] Using LD_PRELOAD override\n");
-            mem_init(1);
+        case 3: // Pool allocator
+            loader->alloc = pool_malloc_malloc;
+            loader->free  = pool_malloc_free;
             break;
-        case 1:
         default:
-            printf("[Mem] Using system malloc/free\n");
-            mem_init(1);
-            break;
+            fprintf(stderr, "Invalid memory module choice. Defaulting to malloc.\n");
+            loader->alloc = std_malloc;
+            loader->free  = std_free;
     }
 }
 
-// Alias mem_loader to mem_init for consistency
-void mem_init(int choice) __attribute__((alias("mem_loader")));
+// Standard malloc/free wrappers
+void* std_malloc(size_t size) {
+    return malloc(size);
+}
 
-void mem_cleanup(void) {
-    // Call specific cleanup based on which init was used
-    // Note: mem_cleanup will be overridden by each module's cleanup
+void std_free(void* ptr) {
+    free(ptr);
 }

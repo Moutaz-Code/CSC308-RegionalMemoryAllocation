@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stddef.h>
-#define memType 1 // 0 for malloc, 1 for arena, 2 for pool.
+//#define memType 1 // 0 for malloc, 1 for arena, 2 for pool.
 #include "memory/mem.h"
 
-#define WORK_DURATION_SECONDS 30
+#define WORK_DURATION_SECONDS 3
 #define ELEMENT_COUNT 10000000 // ~10 million ints
 
 int main() {

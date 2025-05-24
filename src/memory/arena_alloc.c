@@ -1,23 +1,26 @@
-#include "mem.h"
-#include <stdlib.h>
+// src/memory/arena_alloc.c
+#include "../CRegion/region.h"
+
+static CR_Region* my_region = NULL;
 
 char* getAllocationName() {
-    return "Arena Allocation"; 
+    return "CRegion Arena Allocator";
 }
 
 int mem_init() {
-    
-    return 1;
+    my_region = CR_RegionNew();
+    return my_region != NULL;
 }
 
 void mem_cleanup() {
-    
+    CR_RegionRelease(my_region);
 }
 
 void* mem_malloc(size_t size) {
-    return malloc(size);
+    return CR_RegionAlloc(my_region, size);
 }
 
 void mem_free(void* ptr) {
-    free(ptr);
+    // No-op: CRegion frees everything at once
+    (void)ptr;
 }

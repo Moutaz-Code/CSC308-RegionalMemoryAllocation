@@ -28,6 +28,7 @@ void mouse_init(GLFWwindow* window) {
     glfwGetCursorPos(window, &current_mouse_x, &current_mouse_y);
 }
 
+
 double mouse_get_x(void) {
     return current_mouse_x;
 }
@@ -36,6 +37,6 @@ double mouse_get_y(void) {
     return current_mouse_y;
 }
 
-// void mouse_update(void) {
-//     // Future: handle button states, delta movement, etc.
-// }
+ void mouse_update(window) {
+    glfwGetCursorPos(window, &current_mouse_x, &current_mouse_y);     // Future: handle button states, delta movement, etc.
+}

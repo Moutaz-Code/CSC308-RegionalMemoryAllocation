@@ -4,6 +4,9 @@
 #include <stdio.h>        // For printf, fprintf
 #include <math.h>         // For sqrtf, atan2f, cosf, sinf (if needed for complex movement)
 
+#define MAX_SPEED 0.0001f // Maximum speed for entities
+
+
 static Entity* entities = NULL; // Pointer to our array of entities
 static size_t entity_count = 0; // The number of entities we are managing
 
@@ -28,7 +31,6 @@ int entity_manager_init(size_t num_entities, int screen_width, int screen_height
     entity_count = num_entities;
     printf("Entity manager initialized for %zu entities.\n", entity_count);
 
-    // Initialize entities with random positions and zero velocity
     for (size_t i = 0; i < entity_count; ++i) {
         entities[i].x = random_float(0.0f, (float)screen_width);
         entities[i].y = random_float(0.0f, (float)screen_height);
@@ -44,26 +46,21 @@ void entity_manager_update(float dt, float target_x, float target_y) {
     for (size_t i = 0; i < entity_count; ++i) {
         Entity* e = &entities[i];
 
-        // Calculate direction to target
-        float dx = target_x - e->x;
-        float dy = target_y - e->y;
         
-        // Simple interpolation towards target (adjust MOUSE_SMOOTHING_FACTOR in config.h)
-        // This creates a basic "follow" behavior.
-        e->vx += dx * MOUSE_SMOOTHING_FACTOR * dt * 60.0f; // Multiply by 60 for frame rate independence assumption
-        e->vy += dy * MOUSE_SMOOTHING_FACTOR * dt * 60.0f;
 
-        // Apply some damping/friction to velocity so they don't accelerate indefinitely
-        e->vx *= 0.95f; 
-        e->vy *= 0.95f;
+        e->x = target_x; // Snap to target position
+        e->y = target_y; // Snap to target position
 
-        // Update position based on velocity
-        e->x += e->vx * dt;
-        e->y += e->vy * dt;
+        
 
-        // Optional: Keep entities within screen bounds (simple wrap-around or clamp)
-        // if (e->x < 0) e->x = 0; else if (e->x > WINDOW_WIDTH) e->x = WINDOW_WIDTH;
-        // if (e->y < 0) e->y = 0; else if (e->y > WINDOW_HEIGHT) e->y = WINDOW_HEIGHT;
+        // Bounds checking
+        //if (e->x < 5.0f) e->x = 300.0f; else if (e->x >= (float)WINDOW_WIDTH-100) e->x = 500.0f;
+        //if (e->y < 5.0f) e->y = 300.0f; else if (e->y >= (float)WINDOW_HEIGHT-100) e->y = 500.0f;
+
+        if (i == 0 && entity_count > 0) {
+            printf("Update Entity 0: x=%.2f, y=%.2f, vx=%.2f, vy=%.2f, target(%.0f,%.0f), dt=%.4f\n",
+                   e->x, e->y, e->vx, e->vy, target_x, target_y, dt);
+        }
     }
 }
 

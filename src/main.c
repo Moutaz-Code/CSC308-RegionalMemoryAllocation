@@ -26,7 +26,7 @@ int main(void) {
     // Initialize entity manager
     if (!entity_manager_init(NUM_ENTITIES, WINDOW_WIDTH, WINDOW_HEIGHT)) {
         fprintf(stderr, "Failed to initialize entity manager.\n");
-        renderer_cleanup();
+        renderer_cleanup(); // This will call glfwTerminate()
         return 1;
     }
 
@@ -38,21 +38,33 @@ int main(void) {
         last_time = current_time;
 
         renderer_begin_frame();
+        
+        double mx_raw = mouse_get_x(); // Get raw mouse x
+        double my_raw = mouse_get_y(); // Get raw mouse y
+        
+        float target_x = (float)mx_raw;
+        float target_y = (float)my_raw; 
 
-        double mx = mouse_get_x();
-        double my = mouse_get_y();
-        // printf("Mouse X: %.2f, Mouse Y: %.2f, dt: %.4f\n", mx, my, dt);
+        // VERY IMPORTANT: Print what's actually being sent
+        printf("Main: Raw Mouse(%.2f, %.2f) -> Target(%.2f, %.2f)\n", mx_raw, my_raw, target_x, target_y);
 
         // Update entities
-        entity_manager_update(dt, (float)mx, (float)my);
+        entity_manager_update(dt, target_x, target_y);
 
-        // --- Rendering entities will go here in the next step ---
+        // Get entity data for rendering
+        const Entity* entities_to_draw = entity_manager_get_entities();
+        size_t num_entities_to_draw = entity_manager_get_count();
+        
+        // DEBUG: Print the number of entities and dt
+        printf("Main Loop: Drawing %zu entities. dt = %f\n", num_entities_to_draw, dt); 
+        
+        renderer_draw_entities(entities_to_draw, num_entities_to_draw);
 
         renderer_end_frame(window);
     }
 
-    entity_manager_cleanup(); // Clean up entities
-    renderer_cleanup();
+    entity_manager_cleanup();
+    renderer_cleanup(); // This now handles glfwTerminate()
     printf("Application terminated.\n");
     return 0;
 }

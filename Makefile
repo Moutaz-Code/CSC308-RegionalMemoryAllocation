@@ -1,49 +1,45 @@
-# ---------------- Compiler and Flags ----------------
+#filepath: Makefile
 CC = gcc
-CFLAGS = -std=c99 -Wall -Wextra -O2
-INCLUDES = -Iinclude -Isrc/memory -Isrc/CRegion
-LDFLAGS = 
-DEFINES = -DmemType=$(MEM_TYPE)
+CFLAGS = -std=c99 -Wall -Wextra -g -O2
+# INCLUDES: -Isrc allows finding <glad/glad.h> if glad.h is in src/glad/
+# and <graphics/renderer.h> if renderer.h is in src/graphics/
+INCLUDES = -Isrc
+LDFLAGS = -lglfw -lGL -lm -ldl
 
-# ---------------- Directories ----------------
-SRC_DIR = src
+SRC_BASE_DIR = src
 BUILD_DIR = build
-BIN = main
+BIN_NAME = region_demo
 
-# ---------------- Memory Type (0 = malloc, 1 = arena, 2 = pool) ----------------
-MEM_TYPE ?= 0
+# Source files
+SRCS = $(SRC_BASE_DIR)/main.c \
+       $(SRC_BASE_DIR)/graphics/renderer.c \
+       $(SRC_BASE_DIR)/glad/glad.c
 
-# ---------------- Source Files ----------------
-SRC_FILES = $(shell find $(SRC_DIR) -name '*.c' ! -name 'malloc_alloc.c' ! -name 'arena_alloc.c' ! -name 'pool_malloc.c')
-ifeq ($(MEM_TYPE), 0)
-    SRC_FILES += $(SRC_DIR)/memory/malloc_alloc.c
-endif
-ifeq ($(MEM_TYPE), 1)
-    SRC_FILES += $(SRC_DIR)/memory/arena_alloc.c
-endif
-ifeq ($(MEM_TYPE), 2)
-    SRC_FILES += $(SRC_DIR)/memory/pool_malloc.c
-endif
+# Object files will be flat in BUILD_DIR:
+# e.g., build/main.o, build/renderer.o, build/glad.o
+OBJS = $(addprefix $(BUILD_DIR)/, $(notdir $(SRCS:.c=.o)))
 
-# Create .o file names
-OBJS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC_FILES))
+all: $(BIN_NAME)
 
-# ---------------- Rules ----------------
-all: $(BIN)
+$(BIN_NAME): $(OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-$(BIN): $(OBJS)
-	$(CC) $(CFLAGS) $(DEFINES) -o $@ $^ $(LDFLAGS)
+# Pattern rule for src/main.c -> build/main.o
+$(BUILD_DIR)/main.o: $(SRC_BASE_DIR)/main.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -c $< -o $@
+# Pattern rule for src/graphics/renderer.c -> build/renderer.o
+$(BUILD_DIR)/renderer.o: $(SRC_BASE_DIR)/graphics/renderer.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+# Pattern rule for src/glad/glad.c -> build/glad.o
+$(BUILD_DIR)/glad.o: $(SRC_BASE_DIR)/glad/glad.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR) $(BIN)
+	rm -rf $(BUILD_DIR) $(BIN_NAME)
 
-print:
-	@echo "Building with memType = $(MEM_TYPE)"
-	@echo "Source files:"
-	@printf "  %s\n" $(SRC_FILES)
-
-.PHONY: all clean print
+.PHONY: all clean

@@ -13,6 +13,8 @@ BIN_NAME = region_demo
 # Source files
 SRCS = $(SRC_BASE_DIR)/main.c \
        $(SRC_BASE_DIR)/graphics/renderer.c \
+       $(SRC_BASE_DIR)/input/mouse.c \
+       $(SRC_BASE_DIR)/simulation/entity_manager.c \
        $(SRC_BASE_DIR)/glad/glad.c
 
 # Object files will be flat in BUILD_DIR:
@@ -31,6 +33,16 @@ $(BUILD_DIR)/main.o: $(SRC_BASE_DIR)/main.c
 
 # Pattern rule for src/graphics/renderer.c -> build/renderer.o
 $(BUILD_DIR)/renderer.o: $(SRC_BASE_DIR)/graphics/renderer.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+# Pattern rule for src/input/mouse.c -> build/mouse.o
+$(BUILD_DIR)/mouse.o: $(SRC_BASE_DIR)/input/mouse.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+# Pattern rule for src/simulation/entity_manager.c -> build/entity_manager.o
+$(BUILD_DIR)/entity_manager.o: $(SRC_BASE_DIR)/simulation/entity_manager.c
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 

@@ -1,6 +1,7 @@
 // filepath: src/graphics/renderer.c
 #include <glad/glad.h> // Must be included before GLFW
 #include "renderer.h"
+#include "input/mouse.h" // Add this include
 #include <stdio.h>     // For fprintf, printf
 
 GLFWwindow* renderer_init(int width, int height, const char* title) {
@@ -31,6 +32,9 @@ GLFWwindow* renderer_init(int width, int height, const char* title) {
         glfwTerminate();
         return NULL;
     }
+
+    // AFTER window is created and context is current, and GLAD is loaded:
+    mouse_init(window); // Initialize mouse input
 
     glViewport(0, 0, width, height);
     printf("Renderer initialized. OpenGL Vendor: %s, Renderer: %s, Version: %s\n",
